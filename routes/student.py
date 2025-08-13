@@ -4,8 +4,8 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from models import Enrollment
-from my_schemas.request_schemas import StudentCreate
-from my_schemas.response_schemas import CourseResponse, StudentResponse
+from schemas.request_schemas import StudentCreate
+from schemas.response_schemas import CourseResponse, StudentResponse
 from repositories import student
 
 router = APIRouter(
@@ -27,12 +27,11 @@ def get_student_profile(id: int, db: Session = Depends(get_db)):
 
 
 
-# Courses
+''' Courses '''
 
 @router.get("/{id}/courses", response_model=List[CourseResponse])
 def list_enrolled_courses(id: int, db: Session = Depends(get_db)):
     return student.list_enrolled_courses(id, db)
-
 
 @router.post("/{s_id}/courses/{c_id}")
 def enroll_in_course(s_id: int, c_id: int, db: Session = Depends(get_db)):

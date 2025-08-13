@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from models import Course, Module
-from my_schemas.response_schemas import CourseResponse
+from schemas.response_schemas import CourseResponse
 
 from database import get_db
 

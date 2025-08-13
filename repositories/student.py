@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 import datetime
 
 from models import Student, Enrollment, Course
-from my_schemas.request_schemas import StudentCreate
+from schemas.request_schemas import StudentCreate
 from hash import Hasher
 
 def list_all(db: Session):

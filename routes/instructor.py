@@ -3,8 +3,8 @@ from typing import List
 from sqlalchemy.orm import Session
 
 from database import get_db
-from my_schemas.request_schemas import InstructorCreate, CourseCreate, ModuleCreate
-from my_schemas.response_schemas import InstructorResponse, InstructorCourseResponse
+from schemas.request_schemas import InstructorCreate, CourseCreate, ModuleCreate
+from schemas.response_schemas import InstructorResponse, InstructorCourseResponse
 from repositories import instructor
 
 router = APIRouter(
@@ -24,10 +24,6 @@ def register_instructor(request: InstructorCreate, db: Session = Depends(get_db)
 def get_instructor_profile(id: int, db: Session = Depends(get_db)):
     return instructor.get_one(id, db)
 
-# @router.put("/{id}")
-# def update_instructor_profile(id: int, request: InstructorBase, db: Session = Depends(get_db)):
-#     return instructor.update(id, request, db)
-
 
 ''' Courses '''
 
@@ -42,6 +38,10 @@ def create_course(id: int, request: CourseCreate, db: Session = Depends(get_db))
 @router.put("/{i_id}/courses/{c_id}", response_model=InstructorCourseResponse)
 def update_course(i_id: int, c_id: int, request: CourseCreate, db: Session = Depends(get_db)):
     return instructor.update_course(i_id, c_id, request, db)
+
+@router.delete("/{i_id}/courses/{c_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_course(i_id: int, c_id: int, db: Session = Depends(get_db)):
+    return instructor.delete_course(i_id, c_id, db)
 
 @router.post("/{i_id}/courses/{c_id}/modules", status_code=status.HTTP_201_CREATED)
 def add_module(i_id: int, c_id: int, request: ModuleCreate, db: Session = Depends(get_db)):

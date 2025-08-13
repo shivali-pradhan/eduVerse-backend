@@ -39,6 +39,7 @@ class CourseBase(BaseModel):
 
 
 class ModuleBase(BaseModel):
+    id: int
     name: str
     description: str
     created_at: datetime.datetime
