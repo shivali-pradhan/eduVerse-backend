@@ -2,8 +2,8 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 import datetime
 
-from models import Student, Enrollment, Course
-from schemas.request_schemas import StudentCreate
+from models import Student, Enrollment, Course, Module, Quiz
+from schemas.request_schemas import StudentCreate, QuizAttempt
 from hash import Hasher
 
 def list_all(db: Session):
@@ -65,4 +65,29 @@ def enroll(s_id: int, c_id: int, db: Session):
     db.refresh(new_enrollment)
 
     return new_enrollment
+
+
+def attempt_quiz(s_id: int, c_id: int, m_id: int, q_id, request: QuizAttempt, db: Session):
+    student = db.query(Student).filter(Student.id == s_id).first()
+    if not student:     
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No student with id: {s_id}")
+    
+    is_course_enrolled = db.query(Enrollment).filter(Enrollment.student_id == s_id, Enrollment.course_id == c_id).first()
+    if not is_course_enrolled:     
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No course enrolled with id: {c_id}")
+    
+    module = db.query(Module).filter(Module.id == m_id).first()
+    if not module:     
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No module with id: {m_id}")
+    
+    quiz = db.query(Quiz).filter(Quiz.id == m_id).first()
+    if not quiz:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No quiz with id: {q_id} in module_id: {m_id}")
+    
+    attempts = []
+
+    for attempt in request.question_answers:
+        attempts.append(attempt)
+
+    return attempts
     

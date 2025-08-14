@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from models import Course, Module
-from schemas.response_schemas import CourseResponse
+from schemas.response_schemas import CourseResponse, ModuleResponse
 
 from database import get_db
 
@@ -26,7 +26,7 @@ def get_course_(id: int, db: Session = Depends(get_db)):
     return course
 
 
-@router.get("/{c_id}/modules/{m_id}")
+@router.get("/{c_id}/modules/{m_id}", response_model=ModuleResponse)
 def get_module(c_id: int, m_id: int, db: Session = Depends(get_db)):
     course = db.query(Course).filter(Course.id == c_id).first()
     if not course:
@@ -37,3 +37,7 @@ def get_module(c_id: int, m_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No module with id: {m_id} in course_id: {c_id}")
     
     return module
+
+@router.get("/{c_id}/modules/{m_id}/quizzes")
+def list_quizzes():
+    pass

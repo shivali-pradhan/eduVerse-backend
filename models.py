@@ -27,6 +27,7 @@ class Student(BaseUser):
     __tablename__ = "students"
 
     enrolled_in = relationship("Enrollment", back_populates="student")
+    quiz_attempts = relationship("QuizAttempt", back_populates="student")
 
 
 class Instructor(BaseUser):
@@ -42,7 +43,6 @@ class Course(MyBaseModel):
     description = Column(String(255))
     credits = Column(Integer)
     created_at = Column(DateTime)
-
     instructor_id = Column(Integer, ForeignKey("instructors.id", ondelete="SET NULL"))
     
     creator = relationship("Instructor", back_populates="courses")
@@ -70,11 +70,11 @@ class Module(MyBaseModel):
     name = Column(String(100), unique=True, nullable=False)
     description = Column(String(255))
     created_at = Column(DateTime)
-
     course_id = Column(Integer, ForeignKey("courses.id", ondelete="CASCADE"))
     
     parent_course = relationship("Course", back_populates="modules")
     learning_content = relationship("LearningContent", back_populates="module")
+    quizzes = relationship("Quiz", back_populates="module")
 
 
 class LearningContent(MyBaseModel):
@@ -83,11 +83,64 @@ class LearningContent(MyBaseModel):
     # text = Column(String(255))
     # video_link = Column(String(200))
     
-    created_at = Column(DateTime)
-    
+    created_at = Column(DateTime) 
     module_id = Column(Integer, ForeignKey("modules.id", ondelete="CASCADE"))
     
     module = relationship("Module", back_populates="learning_content")
+
+
+
+class Quiz(MyBaseModel):
+    __tablename__ = "quizzes"
+
+    title = Column(String(100))
+    duration = Column(Integer)
+    points = Column(Integer)
+    created_at = Column(DateTime)
+    module_id = Column(Integer, ForeignKey("modules.id", ondelete="CASCADE"))
+
+    module = relationship("Module", back_populates="quizzes")
+    questions = relationship("Question", back_populates="quiz")
+    attempts = relationship("QuizAttempt", back_populates="quiz")
+
+
+class Question(MyBaseModel):
+    __tablename__ = "questions"
+
+    text = Column(String(100))
+    correct_option_id = Column(Integer, ForeignKey("options.id", ondelete="SET NULL"))
+    quiz_id = Column(Integer, ForeignKey("quizzes.id", ondelete="CASCADE"))
+
+    quiz = relationship("Quiz", back_populates="questions")
+    options = relationship("Option", back_populates="question", foreign_keys="Option.question_id")
+    correct_option = relationship("Option", foreign_keys=[correct_option_id])
+
+
+class Option(MyBaseModel):
+    __tablename__ = "options"
+
+    text = Column(String(100))
+    question_id = Column(Integer, ForeignKey("questions.id", ondelete="CASCADE"))
+
+    question = relationship("Question", back_populates="options", foreign_keys=[question_id])
+
+
+
+class QuizAttempt(Base):
+    __tablename__ = "quiz_attempts"
+    __table_args__ = (
+        PrimaryKeyConstraint("student_id", "quiz_id", "question_id"),
+    )
+
+    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"))
+    quiz_id = Column(Integer, ForeignKey("quizzes.id", ondelete="SET NULL"))
+    question_id = Column(Integer, ForeignKey("questions.id", ondelete="SET NULL"))
+    answer = Column(Integer, ForeignKey("options.id", ondelete="SET NULL"))
+
+    student = relationship("Student", back_populates="quiz_attempts")
+    quiz = relationship("Quiz", back_populates="attempts")
+
+
 
 
 

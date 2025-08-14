@@ -47,11 +47,27 @@ class ModuleBase(BaseModel):
     class Config:
         orm_mode = True
 
+class QuizBase(BaseModel):
+    id: int
+    title: str
+    duration: int
+    points: int
+    created_at: datetime.datetime
+
+    class Config:
+        orm_mode = True
+   
+class ModuleResponse(ModuleBase):
+    quizzes: List[QuizBase]
+
+    class Config:
+        orm_mode = True
 
 class CourseResponse(CourseBase):
 
     modules: List[ModuleBase] = []
     creator: InstructorBase
+    students: List[StudentBase] = []
 
     class Config:
         orm_mode = True
@@ -59,10 +75,17 @@ class CourseResponse(CourseBase):
 
 class InstructorCourseResponse(CourseBase):
     modules: List[ModuleBase] = []
+    students: List[StudentBase] = []
 
     class Config:
         orm_mode = True
 
+class StudentCourseResponse(CourseBase):
+    modules: List[ModuleBase] = []
+    creator: InstructorBase
+
+    class Config:
+        orm_mode = True
 
 class StudentResponse(StudentBase):
     enrolled_in: List[CourseResponse] = []

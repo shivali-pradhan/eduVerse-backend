@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from models import Enrollment
-from schemas.request_schemas import StudentCreate
+from schemas.request_schemas import StudentCreate, QuizAttempt
 from schemas.response_schemas import CourseResponse, StudentResponse
 from repositories import student
 
@@ -38,5 +38,10 @@ def enroll_in_course(s_id: int, c_id: int, db: Session = Depends(get_db)):
     return student.enroll(s_id, c_id, db)
 
 
+''' Quizzes '''
+
+@router.post("/{s_id}/courses/{c_id}/modules/{m_id}/quizzes/{q_id}")
+def attempt_quiz(s_id: int, c_id: int, m_id: int, q_id, request: QuizAttempt, db: Session = Depends(get_db)):
+    return student.attempt_quiz(s_id, c_id, m_id, q_id, request, db)
 
 

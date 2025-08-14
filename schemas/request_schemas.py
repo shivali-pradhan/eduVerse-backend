@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 
 class UserCreate(BaseModel):
     first_name: Optional[str]
@@ -25,3 +25,25 @@ class CourseCreate(BaseModel):
 class ModuleCreate(BaseModel):
     name: str
     description: Optional[str]
+
+
+class QuizCreate(BaseModel):
+    title: str
+    duration: int
+    points: Optional[int]
+
+class OptionCreate(BaseModel):
+    text: str
+
+class QuestionCreate(BaseModel):
+    text: str
+    options: List[OptionCreate]
+    correct_option_index: int
+
+class QuestionAttempt(BaseModel):
+    question_id: int
+    option_id: int
+
+class QuizAttempt(BaseModel):
+    question_answers: List[QuestionAttempt]
+
