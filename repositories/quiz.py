@@ -2,18 +2,20 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 import datetime
 
-from models import Module, Quiz, Question, Option
+from models.course_models import Module
+from models.quiz_models import Quiz, Question, Option
 from schemas.request_schemas import QuizCreate, QuestionCreate
-from .course import check_course
+from .course import check_instructor_course
 
 def check_module(i_id: int, c_id: int, m_id: int, db: Session):
-    check_course(i_id, c_id, db)
+    
+    check_instructor_course(i_id, c_id, db)
     module = db.query(Module).filter(Module.id == m_id, Module.course_id == c_id).first()
     if not module:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No module with id: {m_id} in course_id: {c_id}")
 
 def list_quizzes(i_id: int, c_id: int, m_id: int, db: Session):
-    check_course(i_id, c_id, db)
+    check_instructor_course(i_id, c_id, db)
     module = db.query(Module).filter(Module.id == m_id, Module.course_id == c_id).first()
     if not module:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No such module with id: {m_id} in course with id: {c_id}")

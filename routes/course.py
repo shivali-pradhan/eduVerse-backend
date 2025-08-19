@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 
-from models import Course, Module
-from schemas.response_schemas import CourseResponse, ModuleResponse
+from schemas.request_schemas import CourseCreate
+from schemas.response_schemas import CourseResponse, InstructorCourseResponse, StudentCourseResponse
+from repositories import course
 
 from database import get_db
 
@@ -13,31 +14,24 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_model=List[CourseResponse])
-def list_courses(db: Session = Depends(get_db)):
-    all_courses = db.query(Course).all()
-    return all_courses
+@router.get("/", response_model=List[StudentCourseResponse])
+def list_all_courses(db: Session = Depends(get_db)):
+    return course.list_all_courses(db)
 
-@router.get("/{id}", response_model=CourseResponse)
-def get_course_(id: int, db: Session = Depends(get_db)):
-    course = db.query(Course).filter(Course.id == id).first()
-    if not course:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No course with id: {id}")
-    return course
+@router.get("/{id}", response_model=StudentCourseResponse)
+def get_course(id: int, db: Session = Depends(get_db)):
+    return course.get_course(id, db)
+
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=InstructorCourseResponse)
+def create_course(request: CourseCreate, db: Session = Depends(get_db)):
+    return course.create_course(request, db)
+
+@router.put("/{id}", status_code=status.HTTP_202_ACCEPTED, response_model=InstructorCourseResponse)
+def update_course(id: int, request: CourseCreate, db: Session = Depends(get_db)):
+    return course.update_course(id, request, db)
+
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_course(id: int, db: Session = Depends(get_db)):
+    return course.delete_course(id, db)
 
 
-@router.get("/{c_id}/modules/{m_id}", response_model=ModuleResponse)
-def get_module(c_id: int, m_id: int, db: Session = Depends(get_db)):
-    course = db.query(Course).filter(Course.id == c_id).first()
-    if not course:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No course with id: {c_id}")
-    
-    module = db.query(Module).filter(Module.id == m_id, Module.course_id == c_id).first()
-    if not module:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No module with id: {m_id} in course_id: {c_id}")
-    
-    return module
-
-@router.get("/{c_id}/modules/{m_id}/quizzes")
-def list_quizzes():
-    pass

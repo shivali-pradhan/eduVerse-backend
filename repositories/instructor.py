@@ -2,9 +2,10 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 import datetime
 
-from models import Instructor
+from models.user_models import Instructor
 from schemas.request_schemas import InstructorCreate
-from hash import Hasher
+from core.security import Hasher
+
 
 def check_instructor(id: int, db: Session):
     instructor = db.query(Instructor).filter(Instructor.id == id).first()
@@ -14,7 +15,7 @@ def check_instructor(id: int, db: Session):
     return instructor
 
 
-def list_all(db: Session):
+def list_instructors(db: Session):
     instructors = db.query(Instructor).all()
     return instructors
 
@@ -38,8 +39,11 @@ def register(request: InstructorCreate, db: Session):
     return new_instructor
 
 
-def get_one(id: int, db: Session):
-    return check_instructor(id, db)    # instructor data along with created courses data (no modules or students)
+def get_instructor(id: int, db: Session):
+    return check_instructor(id, db)
 
 
-#### Update Instructor profile ####
+
+def list_created_courses(id: int, db: Session):
+    instructor = check_instructor(id, db)
+    return instructor.courses
