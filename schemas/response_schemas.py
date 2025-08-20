@@ -8,23 +8,19 @@ class MyBaseModel(BaseModel):
         orm_mode = True
 
 
-''' Base Schemas '''
 
 class UserBase(MyBaseModel):
     id: int
     first_name: str
     last_name: str
-    username: str 
     email: str
-    registered_at: datetime.datetime
-
 
 class StudentBase(UserBase):
     pass
 
 
 class InstructorBase(UserBase):
-    pass
+    qualification: str
 
 
 class CourseBase(MyBaseModel):
@@ -79,6 +75,12 @@ class StudentResponse(StudentBase):
 class InstructorResponse(InstructorBase):
     courses: List[CourseBase] = []
 
+class OptionResponse(BaseModel):
+    text: str
+
+class QuestionResponse(BaseModel):
+    text: str
+    options: List[OptionResponse]
 
 
 

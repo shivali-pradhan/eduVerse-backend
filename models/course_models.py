@@ -41,7 +41,6 @@ class Module(MyBaseModel):
 
     name = Column(String(100), unique=True, nullable=False)
     description = Column(String(255))
-    created_at = Column(DateTime)
     course_id = Column(Integer, ForeignKey("courses.id", ondelete="CASCADE"))
     
     parent_course = relationship("Course", back_populates="modules")

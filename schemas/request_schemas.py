@@ -15,7 +15,16 @@ class StudentCreate(UserCreate):
 class InstructorCreate(UserCreate):
     qualification: str
 
+class UserUpdate(BaseModel):
+    first_name: str
+    last_name: str
+    email: str
 
+class StudentUpdate(UserUpdate):
+    pass
+
+class InstructorUpdate(UserUpdate):
+    qualification: str
 
 class CourseCreate(BaseModel):
     name: str
@@ -46,6 +55,11 @@ class QuizCreate(BaseModel):
     points: Optional[int]
     module_id: int
 
+class QuizUpdate(BaseModel):
+    title: str
+    duration: int
+    points: Optional[int]
+
 class OptionCreate(BaseModel):
     text: str
 
@@ -54,10 +68,15 @@ class QuestionCreate(BaseModel):
     options: List[OptionCreate]
     correct_option_index: int
 
-class QuestionAttempt(BaseModel):
+class QuestionUpdate(BaseModel):
+    text: str
+    options: List[OptionCreate]
+    correct_option_index: int
+
+class QuestionAttemptCreate(BaseModel):
     question_id: int
     option_id: int
 
-class QuizAttempt(BaseModel):
-    question_answers: List[QuestionAttempt]
+class QuizAttemptCreate(BaseModel):
+    question_answers: List[QuestionAttemptCreate]
 

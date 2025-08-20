@@ -3,8 +3,10 @@ from typing import List
 from sqlalchemy.orm import Session
 
 from database import get_db
+from auth.dependencies import require_instructor, require_student
 from schemas.request_schemas import StudentCreate, EnrollmentCreate
-from schemas.response_schemas import StudentResponse, StudentCourseResponse
+from schemas.response_schemas import StudentBase, StudentResponse, StudentCourseResponse
+from schemas.token_schemas import CurrentUser
 from repositories import student
 
 router = APIRouter(
@@ -12,35 +14,36 @@ router = APIRouter(
     tags = ["students"]
 )
 
-@router.get("/", response_model=List[StudentResponse])
-def list_students(db: Session = Depends(get_db)):
+@router.get("/", response_model=List[StudentBase])
+def list_students(db: Session = Depends(get_db), current_user: CurrentUser = Depends(require_instructor)):
     return student.list_students(db)
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=StudentResponse)
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=StudentBase)
 def register_student(request: StudentCreate, db: Session = Depends(get_db)):
     return student.register_student(request, db)
 
 @router.get("/{id}", response_model=StudentResponse)
-def get_student(id: int, db: Session = Depends(get_db)):
-    return student.get_student(id, db)
-
+def get_student(id: int, db: Session = Depends(get_db), current_user: CurrentUser = Depends(require_student)):
+    return student.get_student(id, db, current_user)
 
 
 ''' Courses '''
 
 @router.get("/{id}/courses", response_model=List[StudentCourseResponse])
-def list_enrolled_courses(id: int, db: Session = Depends(get_db)):
-    return student.list_enrolled_courses(id, db)
+def list_enrolled_courses(id: int, db: Session = Depends(get_db), current_user: CurrentUser = Depends(require_student)):
+    return student.list_enrolled_courses(id, db, current_user)
 
 @router.post("/{id}/enroll")
-def enroll_in_course(id: int, request: EnrollmentCreate, db: Session = Depends(get_db)):
-    return student.enroll_in_course(id, request, db)
+def enroll_in_course(id: int, request: EnrollmentCreate, db: Session = Depends(get_db), current_user: CurrentUser = Depends(require_student)):
+    return student.enroll_in_course(id, request, db, current_user)
 
+@router.get("/{id}/quizzes")
+def list_available_quizzes(id: int, db: Session = Depends(get_db), current_user: CurrentUser = Depends(require_student)):
+    return student.list_available_quizzes(id, db, current_user)
 
-''' Quizzes '''
+@router.get("/{id}/quiz-scores")
+def show_quiz_scores():
+    return
 
-@router.post("/{s_id}/courses/{c_id}/modules/{m_id}/quizzes/{q_id}")
-def attempt_quiz(s_id: int, c_id: int, m_id: int, q_id, db: Session = Depends(get_db)):
-    return student.attempt_quiz(s_id, c_id, m_id, q_id, db)
 
 

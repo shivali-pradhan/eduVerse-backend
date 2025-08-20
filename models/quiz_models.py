@@ -40,7 +40,6 @@ class Option(MyBaseModel):
     question = relationship("Question", back_populates="options", foreign_keys=[question_id])
 
 
-
 class QuizAttempt(Base):
     __tablename__ = "quiz_attempts"
     __table_args__ = (
@@ -51,6 +50,21 @@ class QuizAttempt(Base):
     quiz_id = Column(Integer, ForeignKey("quizzes.id", ondelete="SET NULL"))
     question_id = Column(Integer, ForeignKey("questions.id", ondelete="SET NULL"))
     answer = Column(Integer, ForeignKey("options.id", ondelete="SET NULL"))
+
+    student = relationship("Student", back_populates="quiz_attempts")
+    quiz = relationship("Quiz", back_populates="attempts")
+    question = relationship("Question", back_populates="attempts")
+
+
+class QuizResult(Base):
+    __tablename__ = "quiz_results"  
+    __table_args__ = (
+        PrimaryKeyConstraint("student_id", "quiz_id"),
+    )
+
+    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"))
+    quiz_id = Column(Integer, ForeignKey("quizzes.id", ondelete="SET NULL"))
+    score = Column(Integer)
 
     student = relationship("Student", back_populates="quiz_attempts")
     quiz = relationship("Quiz", back_populates="attempts")

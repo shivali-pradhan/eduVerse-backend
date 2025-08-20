@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, PrimaryKey
 from sqlalchemy.orm import relationship
 
 from .base_model import MyBaseModel
-
+from database import Base
 
 class User(MyBaseModel):
     __tablename__ = "users"
@@ -15,7 +15,7 @@ class User(MyBaseModel):
     instructor_profile = relationship("Instructor", back_populates="user")
 
 
-class BaseUser(MyBaseModel):  
+class BaseUser(Base):  
     __abstract__ = True
 
     id = Column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True, index=True)

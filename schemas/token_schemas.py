@@ -8,3 +8,9 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     sub: Optional[str] = None
     role: Optional[str] = None
+
+class CurrentUser(BaseModel):
+    id: int
+    username: str
+    role: str
+

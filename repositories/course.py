@@ -4,15 +4,18 @@ import datetime
 
 from models.course_models import Course
 from schemas.request_schemas import CourseCreate, CourseUpdate
-
+from schemas.token_schemas import CurrentUser
 from .instructor import check_instructor
 
 
-def check_instructor_course(i_id: int, c_id: int, db: Session):
-    check_instructor(i_id, db)
-    course = db.query(Course).filter(Course.id == c_id, Course.instructor_id == i_id).first()
+def check_instructor_course(c_id: int, db: Session, current_instructor: CurrentUser):
+    course = db.query(Course).filter(Course.id == c_id).first()
     if not course:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No course with id: {c_id} created by instructor_id: {i_id}")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No course with id: {c_id}")
+    
+    check_instructor(course.instructor_id, db, current_instructor)
+
+    return course
 
 
 def list_all_courses(db: Session):
@@ -26,14 +29,13 @@ def get_course(id: int, db: Session):
     return course
 
 
-def create_course(request: CourseCreate, db: Session):
-    check_instructor(request.instructor_id, db)
+def create_course(request: CourseCreate, db: Session, current_instructor: CurrentUser):
+    check_instructor(request.instructor_id, db, current_instructor)
     
     new_course = Course(
         name = request.name,
         description = request.description,
         credits = request.credits,
-        created_at = datetime.datetime.now(),
         instructor_id = request.instructor_id
     )
 
@@ -43,12 +45,10 @@ def create_course(request: CourseCreate, db: Session):
 
     return new_course
 
-### Authorization required ###
-def update_course(id: int, request: CourseUpdate, db: Session):
+
+def update_course(id: int, request: CourseUpdate, db: Session, current_instructor: CurrentUser):
     
-    course = db.query(Course).filter(Course.id == id).first()
-    if not course:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No course with id: {id}")
+    course = check_instructor_course(id, db, current_instructor)
     
     course.name = request.name
     course.description = request.description
@@ -60,15 +60,10 @@ def update_course(id: int, request: CourseUpdate, db: Session):
     return course
 
 
-def delete_course(i_id: int, c_id: int, db: Session):
-    check_instructor(i_id, db)
-    
-    course = db.query(Course).filter(Course.id == c_id, Course.instructor_id == i_id)
-    if not course.first():
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No such course with id: {c_id} created by instructor with id: {i_id}")
-    
-    course.delete(synchronize_session=False)
+def delete_course(id: int, db: Session, current_instructor: CurrentUser):
+    course = check_instructor_course(id, db, current_instructor)
+    db.delete(course)
     db.commit()
 
-    return "deleted"
+    return None
 
