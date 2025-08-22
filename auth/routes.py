@@ -5,7 +5,7 @@ from datetime import timedelta
 
 from core.config import settings
 from schemas.token_schemas import Token
-from core.security import create_access_token, authenticate_user
+from auth.security import create_access_token, authenticate_user
 from database import get_db
 
 

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from schemas.request_schemas import QuizCreate, QuestionCreate, QuizAttemptCreate, QuestionUpdate
-from schemas.response_schemas import QuizBase, QuestionResponse
+from schemas.response_schemas import QuizBase, InstructorQuestionResponse
 from schemas.token_schemas import CurrentUser
 from repositories import quiz
 from auth.dependencies import require_instructor, require_student
@@ -27,11 +27,11 @@ def update_quiz(id: int, request: QuizCreate, db: Session = Depends(get_db), cur
 def delete_quiz(id: int, db: Session = Depends(get_db), current_user: CurrentUser = Depends(require_instructor)):
     return quiz.delete_quiz(id, db, current_user)
 
-@router.post("/{id}/questions", status_code=status.HTTP_201_CREATED, response_model=QuestionResponse)
+@router.post("/{id}/questions", status_code=status.HTTP_201_CREATED, response_model=InstructorQuestionResponse)
 def add_question(id: int, request: QuestionCreate, db: Session = Depends(get_db), current_user: CurrentUser = Depends(require_instructor)):
     return quiz.add_question(id, request, db, current_user)
 
-@router.put("/{quiz_id}/questions/{ques_id}", status_code=status.HTTP_202_ACCEPTED, response_model=QuestionResponse)
+@router.put("/{quiz_id}/questions/{ques_id}", status_code=status.HTTP_202_ACCEPTED, response_model=InstructorQuestionResponse)
 def update_question(quiz_id: int, ques_id: int, request: QuestionUpdate, db: Session = Depends(get_db), current_user: CurrentUser = Depends(require_instructor)):
     return quiz.update_question(quiz_id, ques_id, request, db, current_user)
 

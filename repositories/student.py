@@ -2,10 +2,12 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from models.user_models import User, Student
-from models.course_models import Enrollment, Course
+from models.course_models import Enrollment, Course, Module
+from models.quiz_models import Quiz, QuizResult, QuizAttempt, Question
 from schemas.request_schemas import StudentCreate, EnrollmentCreate
 from schemas.token_schemas import CurrentUser
-from core.security import Hasher
+from auth.security import Hasher
+from core.sort import sort
 
 def check_student(id: int, db: Session, current_student: CurrentUser):
     if current_student.id != id:
@@ -16,9 +18,21 @@ def check_student(id: int, db: Session, current_student: CurrentUser):
 
     return student
 
-def list_students(db: Session):
-    students = db.query(Student).all()
-    return students
+def list_students(db: Session, search: str, sort_by: str, order: str):
+    query = db.query(Student)
+
+    if search:
+        query = query.filter(
+            Student.first_name.ilike(f"%{search}%") |
+            Student.last_name.ilike(f"%{search}%") |
+            Student.email.ilike(f"%{search}%") 
+        )
+
+    fields = ["id", "first_name", "last_name", "email", "created_at"]
+    sorted_students = sort(query=query, model=Student, model_fields=fields, sort_field=sort_by, order=order)
+        
+    return sorted_students
+
 
 def register_student(request: StudentCreate, db: Session):
     
@@ -49,9 +63,19 @@ def get_student(id: int, db: Session, current_student: CurrentUser):
     return check_student(id, db, current_student)
 
 
-def list_enrolled_courses(id: int, db: Session, current_student: CurrentUser):
+def list_enrolled_courses(id: int, db: Session, current_student: CurrentUser, search: str, sort_by: str, order: str):
     student = check_student(id, db, current_student)
-    return student.enrolled_in
+    query = db.query(Course).join(Enrollment, Enrollment.course_id == Course.id & Enrollment.student_id == student.id)
+
+    if search:
+        query = query.filter(
+            Course.name.ilike(f"%{search}%")
+        )
+
+    fields = ["id", "name", "credits", "duration"]
+    sorted_courses = sort(sort(query=query, model=Course, model_fields=fields, sort_field=sort_by, order=order))
+
+    return sorted_courses
 
 
 def enroll_in_course(id: int, request: EnrollmentCreate, db: Session, current_student: CurrentUser):
@@ -72,9 +96,59 @@ def enroll_in_course(id: int, request: EnrollmentCreate, db: Session, current_st
     return new_enrollment
 
 
-def list_available_quizzes(id: int, db: Session, current_student: CurrentUser):
-    check_student(id, db, current_student)
+def list_available_quizzes(id: int, db: Session, current_student: CurrentUser, search: str, sort_by: str, order: str):
+    student = check_student(id, db, current_student)
 
+    course_ids = db.query(Enrollment.course_id).filter(Enrollment.student_id == student.id).all()
+    if not course_ids:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No course enrolled")
     
+    enrolled_course_ids = []
+    for item in course_ids:
+        enrolled_course_ids.append(item[0])
 
+    module_ids = db.query(Module.id).filter(Module.course_id.in_(enrolled_course_ids)).all()
+    if not module_ids:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No modules in enrolled courses")
+    
+    enrolled_module_ids = []
+    for item in module_ids:
+        enrolled_module_ids.append(item[0])
+
+    query = db.query(Quiz).filter(Quiz.module_id.in_(enrolled_module_ids))
+    
+    if search:
+        query = query.filter(
+            Quiz.title.ilike(f"%{search}%") 
+        )
+    fields = ["id", "title", "marks_per_ques", "total_marks"]
+    sorted_quizzes = sort(sort(query=query, model=Quiz, model_fields=fields, sort_field=sort_by, order=order))
+    
+    return sorted_quizzes
+
+
+def show_quiz_scores(id: int, db: Session, current_student: CurrentUser):
+    student = check_student(id, db, current_student)
+    
+    quiz_results = db.query(QuizResult.quiz_id, QuizResult.score).filter(QuizResult.student_id == student.id).all()
+    if not quiz_results:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No attempted quizzes")
+    
+    return quiz_results
+
+
+def show_quiz_attempts(id: int, db: Session, current_student: CurrentUser):
+    student = check_student(id, db, current_student)
+    quiz_attempts = db.query(
+        QuizAttempt.quiz_id, 
+        QuizAttempt.question_id, 
+        QuizAttempt.answer,
+        Question.correct_option_id
+        ).join(Question, Question.id == QuizAttempt.question_id).filter(
+            QuizAttempt.student_id == student.id).all()
+    if not quiz_attempts:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No attempted quizzes")
+
+    print(quiz_attempts)
+    return quiz_attempts
     

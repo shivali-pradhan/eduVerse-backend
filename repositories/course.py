@@ -6,6 +6,7 @@ from models.course_models import Course
 from schemas.request_schemas import CourseCreate, CourseUpdate
 from schemas.token_schemas import CurrentUser
 from .instructor import check_instructor
+from core.sort import sort
 
 
 def check_instructor_course(c_id: int, db: Session, current_instructor: CurrentUser):
@@ -18,9 +19,18 @@ def check_instructor_course(c_id: int, db: Session, current_instructor: CurrentU
     return course
 
 
-def list_all_courses(db: Session):
-    all_courses = db.query(Course).all()
-    return all_courses
+def list_all_courses(db: Session, search: str, sort_by: str, order: str):
+    query = db.query(Course)
+    if search:
+        query = query.filter(
+            Course.name.ilike(f"%{search}%")
+        )
+
+    fields = ["id", "name", "credits", "duration"]
+    sorted_courses = sort(sort(query=query, model=Course, model_fields=fields, sort_field=sort_by, order=order))
+
+    return sorted_courses
+
 
 def get_course(id: int, db: Session):
     course = db.query(Course).filter(Course.id == id).first()
@@ -35,6 +45,7 @@ def create_course(request: CourseCreate, db: Session, current_instructor: Curren
     new_course = Course(
         name = request.name,
         description = request.description,
+        duration = 0,
         credits = request.credits,
         instructor_id = request.instructor_id
     )

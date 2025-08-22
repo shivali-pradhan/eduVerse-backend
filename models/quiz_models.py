@@ -11,13 +11,14 @@ class Quiz(MyBaseModel):
 
     title = Column(String(100))
     duration = Column(Integer)
-    points = Column(Integer)
+    marks_per_ques = Column(Integer, default=1)
+    total_marks = Column(Integer)
     module_id = Column(Integer, ForeignKey("modules.id", ondelete="CASCADE"))
 
     module = relationship("Module", back_populates="quizzes")
     questions = relationship("Question", back_populates="quiz")
     attempts = relationship("QuizAttempt", back_populates="quiz")
-
+    results = relationship("QuizResult", back_populates="quiz")
 
 class Question(MyBaseModel):
     __tablename__ = "questions"
@@ -29,12 +30,13 @@ class Question(MyBaseModel):
     quiz = relationship("Quiz", back_populates="questions")
     options = relationship("Option", back_populates="question", foreign_keys="Option.question_id")
     correct_option = relationship("Option", foreign_keys=[correct_option_id])
+    attempts = relationship("QuizAttempt", back_populates="question")
 
 
 class Option(MyBaseModel):
     __tablename__ = "options"
 
-    text = Column(String(100))
+    value = Column(String(100))
     question_id = Column(Integer, ForeignKey("questions.id", ondelete="CASCADE"))
 
     question = relationship("Question", back_populates="options", foreign_keys=[question_id])
@@ -47,7 +49,7 @@ class QuizAttempt(Base):
     )
 
     student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"))
-    quiz_id = Column(Integer, ForeignKey("quizzes.id", ondelete="SET NULL"))
+    quiz_id = Column(Integer, ForeignKey("quizzes.id", ondelete="CASCADE"))
     question_id = Column(Integer, ForeignKey("questions.id", ondelete="SET NULL"))
     answer = Column(Integer, ForeignKey("options.id", ondelete="SET NULL"))
 
@@ -66,5 +68,5 @@ class QuizResult(Base):
     quiz_id = Column(Integer, ForeignKey("quizzes.id", ondelete="SET NULL"))
     score = Column(Integer)
 
-    student = relationship("Student", back_populates="quiz_attempts")
-    quiz = relationship("Quiz", back_populates="attempts")
+    student = relationship("Student", back_populates="quiz_results")
+    quiz = relationship("Quiz", back_populates="results")

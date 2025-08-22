@@ -31,7 +31,7 @@ class Student(BaseUser):
     enrollments = relationship("Enrollment", back_populates="student")
     enrolled_in = relationship("Course", secondary="enrollments", back_populates="students_enrolled")
     quiz_attempts = relationship("QuizAttempt", back_populates="student")
-
+    quiz_results = relationship("QuizResult", back_populates="student")
 
 class Instructor(BaseUser):
     __tablename__ = "instructors"

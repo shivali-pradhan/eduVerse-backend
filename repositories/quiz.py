@@ -22,7 +22,8 @@ def create_quiz(request: QuizCreate, db: Session, current_instructor: CurrentUse
     new_quiz = Quiz(
         title = request.title,
         duration = request.duration,
-        points = request.points,
+        marks_per_ques = request.marks_per_ques,
+        total_marks = 0,
         module_id = request.module_id
     )
     db.add(new_quiz)
@@ -73,6 +74,7 @@ def add_question(id: int, request: QuestionCreate, db: Session, current_instruct
     )
     db.add(new_question)
     db.flush()
+    quiz.total_marks += quiz.marks_per_ques
 
     options_list = []
 
@@ -136,6 +138,7 @@ def delete_question(quiz_id: int, question_id: int, db: Session, current_instruc
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No quiz with id: {quiz_id}")
 
     db.delete(question)
+    quiz.total_marks -= quiz.marks_per_ques
     db.commit()
 
     return None
@@ -157,7 +160,6 @@ def attempt_quiz(quiz_id: int, request: QuizAttemptCreate, db: Session, current_
     course_enrollment = db.query(Enrollment).filter(Enrollment.student_id == current_student.id, Enrollment.course_id == course.id).first()
     if not course_enrollment:     
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Not authorized")
- 
     
     attempts = []
     score = 0
@@ -184,17 +186,17 @@ def attempt_quiz(quiz_id: int, request: QuizAttemptCreate, db: Session, current_
         db.add(new_quiz_attempt)
         db.flush()
         
-        attempts.append(new_quiz_attempt)
+        attempts.append({ "question_id": attempt.question_id, "answer": attempt.option_id})
 
     quiz_result = QuizResult(
         student_id = current_student.id,
         quiz_id = quiz_id,
-        score = score
+        score = score * quiz.marks_per_ques
     )
     db.add(quiz_result)
     db.commit()
     db.refresh(new_quiz_attempt)
     db.refresh(quiz_result)
 
-    return attempts, score
+    return { "attempts": attempts, "score": score }
     

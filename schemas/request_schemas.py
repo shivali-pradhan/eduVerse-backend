@@ -40,11 +40,13 @@ class CourseUpdate(BaseModel):
 class ModuleCreate(BaseModel):
     name: str
     description: Optional[str]
+    duration: int
     course_id: int
 
 class ModuleUpdate(BaseModel):
     name: str
     description: Optional[str]
+    duration: int
 
 class EnrollmentCreate(BaseModel):
     course_id: int
@@ -52,7 +54,7 @@ class EnrollmentCreate(BaseModel):
 class QuizCreate(BaseModel):
     title: str
     duration: int
-    points: Optional[int]
+    marks_per_ques: int
     module_id: int
 
 class QuizUpdate(BaseModel):
@@ -61,7 +63,7 @@ class QuizUpdate(BaseModel):
     points: Optional[int]
 
 class OptionCreate(BaseModel):
-    text: str
+    value: str
 
 class QuestionCreate(BaseModel):
     text: str

@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Query
+from fastapi_pagination import Page, Params, paginate
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 
 from schemas.request_schemas import CourseCreate
 from schemas.response_schemas import InstructorCourseResponse, StudentCourseResponse
@@ -15,9 +16,15 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_model=List[StudentCourseResponse])
-def list_all_courses(db: Session = Depends(get_db), current_user: CurrentUser = Depends(get_current_user)):
-    return course.list_all_courses(db)
+@router.get("/", response_model=Page[StudentCourseResponse])
+def list_all_courses(
+        search: Optional[str] = Query(None, description="Search by 'name'"),
+        sort_by: Optional[str] = Query("id", description="Field to sort by"),
+        order: Optional[str] = Query("asc", description="Sort order: asc or desc"),
+        params: Params = Depends(), 
+        db: Session = Depends(get_db)
+    ):
+    return paginate(course.list_all_courses(db, search, sort_by, order), params)
 
 @router.get("/{id}", response_model=StudentCourseResponse)
 def get_course(id: int, db: Session = Depends(get_db), current_user: CurrentUser = Depends(get_current_user)):

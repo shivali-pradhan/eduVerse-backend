@@ -5,7 +5,7 @@ from fastapi import HTTPException, status
 from jose import jwt, JWTError
 
 from models.user_models import User
-from .config import settings
+from core.config import settings
 from schemas.token_schemas import TokenData
 
 

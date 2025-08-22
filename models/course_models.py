@@ -28,6 +28,7 @@ class Course(MyBaseModel):
     description = Column(String(255))
     credits = Column(Integer)
     duration = Column(Integer)
+
     instructor_id = Column(Integer, ForeignKey("instructors.id", ondelete="SET NULL"))
     
     creator = relationship("Instructor", back_populates="courses")
@@ -41,16 +42,23 @@ class Module(MyBaseModel):
 
     name = Column(String(100), unique=True, nullable=False)
     description = Column(String(255))
+    duration = Column(Integer)
+
     course_id = Column(Integer, ForeignKey("courses.id", ondelete="CASCADE"))
     
+
     parent_course = relationship("Course", back_populates="modules")
-    learning_content = relationship("LearningContent", back_populates="module")
+    content_files = relationship("LearningContentFile", back_populates="module")
     quizzes = relationship("Quiz", back_populates="module")
 
 
-class LearningContent(MyBaseModel):
-    __tablename__ = "learning_content"
+class LearningContentFile(MyBaseModel):
+    __tablename__ = "learning_content_files"
+
+    file_name = Column(String)
+    file_url = Column(String)
+    file_type = Column(String)
 
     module_id = Column(Integer, ForeignKey("modules.id", ondelete="CASCADE"))
     
-    module = relationship("Module", back_populates="learning_content")
+    module = relationship("Module", back_populates="content_files")

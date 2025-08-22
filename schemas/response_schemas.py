@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import List
 import datetime
 
@@ -27,6 +27,7 @@ class CourseBase(MyBaseModel):
     id: int
     name: str
     description: str
+    duration: int
     credits: int
     created_at: datetime.datetime
 
@@ -35,21 +36,62 @@ class ModuleBase(MyBaseModel):
     id: int
     name: str
     description: str
+    duration: int
     created_at: datetime.datetime
-
 
 class QuizBase(MyBaseModel):
     id: int
     title: str
     duration: int
-    points: int
+    marks_per_ques: int
+    total_marks: int
     created_at: datetime.datetime
-
 
 ''' Response Schemas '''
 
+class OptionResponse(MyBaseModel):
+    id: int
+    text: str
+
+class StudentQuestionResponse(MyBaseModel):
+    id: int
+    text: str
+    options: List[OptionResponse]
+
+class InstructorQuestionResponse(StudentQuestionResponse):
+    correct_option: OptionResponse
+
+class StudentQuizResponse(QuizBase):
+    questions: List[StudentQuestionResponse]
+
+class InstructorQuizResponse(StudentQuizResponse):
+    questions: List[InstructorQuestionResponse]
+
+class StudentQuizScoreResponse(MyBaseModel):
+    quiz_id: int
+    score: int
+
+class InstructorQuizScoreResponse(StudentQuizScoreResponse):
+    student_id: int
+
+class StudentQuizAttemptResponse(MyBaseModel):
+    quiz_id: int
+    question_id: int
+    answer: int
+    correct_option_id: int
+
+class InstructorQuizAttemptResponse(StudentQuizAttemptResponse):
+    student_id: int
+
+class ContentFileResponse(MyBaseModel):
+    id: int
+    file_name: str
+    file_type: str
+    file_url: str
+
 class ModuleResponse(ModuleBase):
-    quizzes: List[QuizBase]
+    content_files: List[ContentFileResponse]
+    quizzes: List[StudentQuizResponse]
 
 
 class CourseResponse(CourseBase):
