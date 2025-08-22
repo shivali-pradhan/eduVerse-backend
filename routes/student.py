@@ -5,7 +5,7 @@ from fastapi_pagination import Page, paginate
 
 from database import get_db
 from auth.dependencies import require_instructor, require_student
-from schemas.request_schemas import StudentCreate, EnrollmentCreate
+from schemas.request_schemas import StudentCreate, EnrollmentCreate, StudentUpdate
 from schemas.response_schemas import StudentBase, StudentResponse, StudentCourseResponse, StudentQuizResponse, StudentQuizScoreResponse, StudentQuizAttemptResponse
 from schemas.token_schemas import CurrentUser
 from schemas.custom_pagination import CustomParams
@@ -35,6 +35,9 @@ def register_student(request: StudentCreate, db: Session = Depends(get_db)):
 def get_student(id: int, db: Session = Depends(get_db), current_user: CurrentUser = Depends(require_student)):
     return student.get_student(id, db, current_user)
 
+@router.put("/{id}", response_model=StudentResponse)
+def update_student(id: int, request: StudentUpdate, db: Session = Depends(get_db), current_user: CurrentUser = Depends(require_student)):
+    return student.update_student(id, request, db, current_user)
 
 ''' Courses '''
 

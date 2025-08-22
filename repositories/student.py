@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from models.user_models import User, Student
 from models.course_models import Enrollment, Course, Module
 from models.quiz_models import Quiz, QuizResult, QuizAttempt, Question
-from schemas.request_schemas import StudentCreate, EnrollmentCreate
+from schemas.request_schemas import StudentCreate, EnrollmentCreate, StudentUpdate
 from schemas.token_schemas import CurrentUser
 from auth.security import Hasher
 from core.sort import sort
@@ -61,6 +61,18 @@ def register_student(request: StudentCreate, db: Session):
 
 def get_student(id: int, db: Session, current_student: CurrentUser):
     return check_student(id, db, current_student)
+
+def update_student(id: int, db: Session, request: StudentUpdate, current_student: CurrentUser):
+    student = check_student(id, db, current_student)
+
+    student.first_name = request.first_name
+    student.last_name = request.last_name
+    student.email = request.email
+
+    db.commit()
+    db.refresh(student)
+
+    return student
 
 
 def list_enrolled_courses(id: int, db: Session, current_student: CurrentUser, search: str, sort_by: str, order: str):

@@ -51,7 +51,7 @@ class QuizBase(MyBaseModel):
 
 class OptionResponse(MyBaseModel):
     id: int
-    text: str
+    value: str
 
 class StudentQuestionResponse(MyBaseModel):
     id: int

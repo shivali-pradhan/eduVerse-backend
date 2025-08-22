@@ -128,7 +128,7 @@ def list_created_courses(id: int, db: Session, search: str, sort_by: str, order:
         )
 
     fields = ["id", "name", "credits", "duration"]
-    sorted_courses = sort(sort(query=query, model=Course, model_fields=fields, sort_field=sort_by, order=order))
+    sorted_courses = sort(query=query, model=Course, model_fields=fields, sort_field=sort_by, order=order)
 
     return sorted_courses
 
