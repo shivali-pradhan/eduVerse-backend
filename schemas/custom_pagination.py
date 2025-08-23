@@ -3,7 +3,9 @@ from fastapi_pagination.bases import AbstractParams, BaseRawParams, RawParams
 from pydantic import Field
 
 from fastapi import Query
+from typing import List, TypeVar, Generic
 from pydantic import BaseModel
+from pydantic.generics import GenericModel
 
 # class CustomParams(AbstractParams):
 #     page_size: int =  Field(20, ge=1, le=50, description="Number of items per page")
@@ -41,4 +43,10 @@ class CustomParams(BaseModel, AbstractParams):
 #             include_total=self.include_total,
 #         )
     
-   
+T = TypeVar("T")
+
+class PaginatedResponse(GenericModel, Generic[T]):
+    total_items: int
+    page_num: int
+    page_size: int
+    items: List[T]

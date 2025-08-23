@@ -3,10 +3,10 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from schemas.request_schemas import QuizCreate, QuestionCreate, QuizAttemptCreate, QuestionUpdate
-from schemas.response_schemas import QuizBase, InstructorQuestionResponse
+from schemas.response_schemas import QuizBase, InstructorQuestionResponse, StudentQuizAttemptResponse, InstructorQuizAttemptResponse
 from schemas.token_schemas import CurrentUser
 from repositories import quiz
-from auth.dependencies import require_instructor, require_student
+from auth.dependencies import require_instructor, require_student, get_current_user
 from database import get_db
 
 router = APIRouter(
@@ -39,6 +39,16 @@ def update_question(quiz_id: int, ques_id: int, request: QuestionUpdate, db: Ses
 def delete_question(quiz_id: int, ques_id: int, db: Session = Depends(get_db), current_user: CurrentUser = Depends(require_instructor)):
     return quiz.delete_question(quiz_id, ques_id, db, current_user)
 
+''' Attempts '''
+
 @router.post("/{id}/attempts", status_code=status.HTTP_201_CREATED)
 def attempt_quiz(id: int, request: QuizAttemptCreate, db: Session = Depends(get_db), current_user: CurrentUser = Depends(require_student)):
     return quiz.attempt_quiz(id, request, db, current_user)
+
+@router.get("/{id}/my_attempts", response_model=List[StudentQuizAttemptResponse])
+def get_my_attempts(id: int, db: Session = Depends(get_db), current_user: CurrentUser = Depends(require_student)):
+    return quiz.get_my_attempts(id, db, current_user)
+
+@router.get("/{id}/all_attempts", response_model=List[InstructorQuizAttemptResponse])
+def get_all_attempts(id: int, db: Session = Depends(get_db), current_user: CurrentUser = Depends(require_instructor)):
+    return quiz.get_all_attempts(id, db, current_user)

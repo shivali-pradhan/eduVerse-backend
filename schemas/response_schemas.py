@@ -75,7 +75,6 @@ class InstructorQuizScoreResponse(StudentQuizScoreResponse):
     student_id: int
 
 class StudentQuizAttemptResponse(MyBaseModel):
-    quiz_id: int
     question_id: int
     answer: int
     correct_option_id: int

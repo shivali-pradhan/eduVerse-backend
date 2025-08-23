@@ -13,8 +13,8 @@ class Enrollment(Base):
         PrimaryKeyConstraint("student_id", "course_id"),
     )
 
-    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"))
-    course_id = Column(Integer, ForeignKey("courses.id", ondelete="SET NULL"))
+    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False)
+    course_id = Column(Integer, ForeignKey("courses.id", ondelete="CASCADE"), nullable=False)
     enrolled_at = Column(DateTime(timezone=True), server_default=func.now())
 
     student = relationship("Student", back_populates="enrollments")
@@ -32,7 +32,7 @@ class Course(MyBaseModel):
     instructor_id = Column(Integer, ForeignKey("instructors.id", ondelete="SET NULL"))
     
     creator = relationship("Instructor", back_populates="courses")
-    modules = relationship("Module", back_populates="parent_course")
+    modules = relationship("Module", back_populates="parent_course", passive_deletes=True)
     enrollments = relationship("Enrollment", back_populates="course")
     students_enrolled = relationship("Student", secondary="enrollments", back_populates="enrolled_in")
 
@@ -44,12 +44,11 @@ class Module(MyBaseModel):
     description = Column(String(255))
     duration = Column(Integer)
 
-    course_id = Column(Integer, ForeignKey("courses.id", ondelete="CASCADE"))
-    
+    course_id = Column(Integer, ForeignKey("courses.id", ondelete="CASCADE"), nullable=False)
 
     parent_course = relationship("Course", back_populates="modules")
-    content_files = relationship("LearningContentFile", back_populates="module")
-    quizzes = relationship("Quiz", back_populates="module")
+    content_files = relationship("LearningContentFile", back_populates="module", passive_deletes=True)
+    quizzes = relationship("Quiz", back_populates="module", passive_deletes=True)
 
 
 class LearningContentFile(MyBaseModel):
@@ -59,6 +58,6 @@ class LearningContentFile(MyBaseModel):
     file_url = Column(String)
     file_type = Column(String)
 
-    module_id = Column(Integer, ForeignKey("modules.id", ondelete="CASCADE"))
+    module_id = Column(Integer, ForeignKey("modules.id", ondelete="CASCADE"), nullable=False)
     
     module = relationship("Module", back_populates="content_files")

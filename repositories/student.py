@@ -1,5 +1,6 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy import and_
 
 from models.user_models import User, Student
 from models.course_models import Enrollment, Course, Module
@@ -8,6 +9,7 @@ from schemas.request_schemas import StudentCreate, EnrollmentCreate, StudentUpda
 from schemas.token_schemas import CurrentUser
 from auth.security import Hasher
 from core.sort import sort
+from core.paginate import paginate
 
 def check_student(id: int, db: Session, current_student: CurrentUser):
     if current_student.id != id:
@@ -18,7 +20,8 @@ def check_student(id: int, db: Session, current_student: CurrentUser):
 
     return student
 
-def list_students(db: Session, search: str, sort_by: str, order: str):
+
+def list_students(db: Session, search: str, sort_by: str, order: str, page_num: int, page_size: int):
     query = db.query(Student)
 
     if search:
@@ -30,8 +33,8 @@ def list_students(db: Session, search: str, sort_by: str, order: str):
 
     fields = ["id", "first_name", "last_name", "email", "created_at"]
     sorted_students = sort(query=query, model=Student, model_fields=fields, sort_field=sort_by, order=order)
-        
-    return sorted_students
+    
+    return paginate(page_num, page_size, sorted_students)
 
 
 def register_student(request: StudentCreate, db: Session):
@@ -75,9 +78,9 @@ def update_student(id: int, db: Session, request: StudentUpdate, current_student
     return student
 
 
-def list_enrolled_courses(id: int, db: Session, current_student: CurrentUser, search: str, sort_by: str, order: str):
+def list_enrolled_courses(id: int, db: Session, current_student: CurrentUser, search: str, sort_by: str, order: str, page_num: int, page_size: int):
     student = check_student(id, db, current_student)
-    query = db.query(Course).join(Enrollment, Enrollment.course_id == Course.id & Enrollment.student_id == student.id)
+    query = db.query(Course).join(Enrollment, and_(Enrollment.course_id == Course.id, Enrollment.student_id == student.id))
 
     if search:
         query = query.filter(
@@ -85,10 +88,9 @@ def list_enrolled_courses(id: int, db: Session, current_student: CurrentUser, se
         )
 
     fields = ["id", "name", "credits", "duration"]
-    sorted_courses = sort(sort(query=query, model=Course, model_fields=fields, sort_field=sort_by, order=order))
+    sorted_courses = sort(query=query, model=Course, model_fields=fields, sort_field=sort_by, order=order)
 
-    return sorted_courses
-
+    return paginate(page_num, page_size, sorted_courses)
 
 def enroll_in_course(id: int, request: EnrollmentCreate, db: Session, current_student: CurrentUser):
     check_student(id, db, current_student)
@@ -108,7 +110,7 @@ def enroll_in_course(id: int, request: EnrollmentCreate, db: Session, current_st
     return new_enrollment
 
 
-def list_available_quizzes(id: int, db: Session, current_student: CurrentUser, search: str, sort_by: str, order: str):
+def list_available_quizzes(id: int, db: Session, current_student: CurrentUser, search: str, sort_by: str, order: str, page_num: int, page_size: int):
     student = check_student(id, db, current_student)
 
     course_ids = db.query(Enrollment.course_id).filter(Enrollment.student_id == student.id).all()
@@ -134,19 +136,19 @@ def list_available_quizzes(id: int, db: Session, current_student: CurrentUser, s
             Quiz.title.ilike(f"%{search}%") 
         )
     fields = ["id", "title", "marks_per_ques", "total_marks"]
-    sorted_quizzes = sort(sort(query=query, model=Quiz, model_fields=fields, sort_field=sort_by, order=order))
-    
-    return sorted_quizzes
+    sorted_quizzes = sort(query=query, model=Quiz, model_fields=fields, sort_field=sort_by, order=order)
+
+    return paginate(page_num, page_size, sorted_quizzes)
 
 
-def show_quiz_scores(id: int, db: Session, current_student: CurrentUser):
+def show_quiz_scores(id: int, db: Session, current_student: CurrentUser, page_num: int, page_size: int):
     student = check_student(id, db, current_student)
     
-    quiz_results = db.query(QuizResult.quiz_id, QuizResult.score).filter(QuizResult.student_id == student.id).all()
-    if not quiz_results:
+    query = db.query(QuizResult.quiz_id, QuizResult.score).filter(QuizResult.student_id == student.id).all()
+    if not query.all():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No attempted quizzes")
     
-    return quiz_results
+    return paginate(page_num, page_size, query)
 
 
 def show_quiz_attempts(id: int, db: Session, current_student: CurrentUser):

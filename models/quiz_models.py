@@ -13,22 +13,22 @@ class Quiz(MyBaseModel):
     duration = Column(Integer)
     marks_per_ques = Column(Integer, default=1)
     total_marks = Column(Integer)
-    module_id = Column(Integer, ForeignKey("modules.id", ondelete="CASCADE"))
+    module_id = Column(Integer, ForeignKey("modules.id", ondelete="CASCADE"), nullable=False)
 
     module = relationship("Module", back_populates="quizzes")
-    questions = relationship("Question", back_populates="quiz")
-    attempts = relationship("QuizAttempt", back_populates="quiz")
-    results = relationship("QuizResult", back_populates="quiz")
+    questions = relationship("Question", back_populates="quiz", passive_deletes=True)
+    attempts = relationship("QuizAttempt", back_populates="quiz", passive_deletes=True)
+    results = relationship("QuizResult", back_populates="quiz", passive_deletes=True)
 
 class Question(MyBaseModel):
     __tablename__ = "questions"
 
     text = Column(String(100))
     correct_option_id = Column(Integer, ForeignKey("options.id", ondelete="SET NULL"))
-    quiz_id = Column(Integer, ForeignKey("quizzes.id", ondelete="CASCADE"))
+    quiz_id = Column(Integer, ForeignKey("quizzes.id", ondelete="CASCADE"), nullable=False)
 
     quiz = relationship("Quiz", back_populates="questions")
-    options = relationship("Option", back_populates="question", foreign_keys="Option.question_id")
+    options = relationship("Option", back_populates="question", foreign_keys="Option.question_id", passive_deletes=True)
     correct_option = relationship("Option", foreign_keys=[correct_option_id])
     attempts = relationship("QuizAttempt", back_populates="question")
 
@@ -37,7 +37,7 @@ class Option(MyBaseModel):
     __tablename__ = "options"
 
     value = Column(String(100))
-    question_id = Column(Integer, ForeignKey("questions.id", ondelete="CASCADE"))
+    question_id = Column(Integer, ForeignKey("questions.id", ondelete="CASCADE"), nullable=False)
 
     question = relationship("Question", back_populates="options", foreign_keys=[question_id])
 
@@ -48,8 +48,8 @@ class QuizAttempt(Base):
         PrimaryKeyConstraint("student_id", "quiz_id", "question_id"),
     )
 
-    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"))
-    quiz_id = Column(Integer, ForeignKey("quizzes.id", ondelete="CASCADE"))
+    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False)
+    quiz_id = Column(Integer, ForeignKey("quizzes.id", ondelete="CASCADE"), nullable=False)
     question_id = Column(Integer, ForeignKey("questions.id", ondelete="SET NULL"))
     answer = Column(Integer, ForeignKey("options.id", ondelete="SET NULL"))
 
@@ -64,8 +64,8 @@ class QuizResult(Base):
         PrimaryKeyConstraint("student_id", "quiz_id"),
     )
 
-    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"))
-    quiz_id = Column(Integer, ForeignKey("quizzes.id", ondelete="SET NULL"))
+    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False)
+    quiz_id = Column(Integer, ForeignKey("quizzes.id", ondelete="CASCADE"), nullable=False)
     score = Column(Integer)
 
     student = relationship("Student", back_populates="quiz_results")

@@ -11,8 +11,8 @@ class User(MyBaseModel):
     password = Column(String(), nullable=False)
     role = Column(String, nullable=False)
 
-    student_profile = relationship("Student", back_populates="user")
-    instructor_profile = relationship("Instructor", back_populates="user")
+    student_profile = relationship("Student", back_populates="user", passive_deletes=True)
+    instructor_profile = relationship("Instructor", back_populates="user", passive_deletes=True)
 
 
 class BaseUser(Base):  
@@ -28,10 +28,10 @@ class Student(BaseUser):
     __tablename__ = "students"
 
     user = relationship("User", back_populates="student_profile")
-    enrollments = relationship("Enrollment", back_populates="student")
-    enrolled_in = relationship("Course", secondary="enrollments", back_populates="students_enrolled")
-    quiz_attempts = relationship("QuizAttempt", back_populates="student")
-    quiz_results = relationship("QuizResult", back_populates="student")
+    enrollments = relationship("Enrollment", back_populates="student", passive_deletes=True)
+    enrolled_in = relationship("Course", secondary="enrollments", back_populates="students_enrolled", passive_deletes=True)
+    quiz_attempts = relationship("QuizAttempt", back_populates="student", passive_deletes=True)
+    quiz_results = relationship("QuizResult", back_populates="student", passive_deletes=True)
 
 class Instructor(BaseUser):
     __tablename__ = "instructors"

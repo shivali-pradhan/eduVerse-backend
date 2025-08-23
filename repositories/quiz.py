@@ -80,7 +80,7 @@ def add_question(id: int, request: QuestionCreate, db: Session, current_instruct
 
     for opt in request.options:
         new_option = Option(
-            text = opt.text,
+            value = opt.value,
             question_id = new_question.id
         )
         db.add(new_option)
@@ -116,7 +116,7 @@ def update_question(quiz_id: int, question_id: int, request: QuestionUpdate, db:
 
     for opt in request.options:
         new_option = Option(
-            text = opt.text,
+            value = opt.value,
             question_id = question.id
         )
         db.add(new_option)
@@ -200,3 +200,33 @@ def attempt_quiz(quiz_id: int, request: QuizAttemptCreate, db: Session, current_
 
     return { "attempts": attempts, "score": score }
     
+
+def get_my_attempts(quiz_id: int, db: Session, current_student: CurrentUser):
+    quiz = db.query(Quiz).filter(Quiz.id == quiz_id).first()
+    if not quiz:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No quiz with id: {quiz_id}")
+    
+    quiz_attempts = db.query(QuizAttempt.question_id, QuizAttempt.answer, Question.correct_option_id).join(
+        Question, Question.id == QuizAttempt.question_id).filter(
+        QuizAttempt.student_id == current_student.id,
+        QuizAttempt.quiz_id == quiz_id).all()
+    if not quiz_attempts:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Quiz not attempted")
+        
+    return quiz_attempts
+  
+
+def get_all_attempts(quiz_id: int, db: Session, current_instructor: CurrentUser):
+    quiz = db.query(Quiz).filter(Quiz.id == quiz_id).first()
+    if not quiz:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No quiz with id: {quiz_id}")
+    
+    check_module(quiz.module_id, db, current_instructor)
+    quiz_attempts = db.query(QuizAttempt).join(
+        Question, Question.id == QuizAttempt.question_id
+        ).filter(QuizAttempt.quiz_id == quiz_id).all()
+    
+    if not quiz_attempts:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Quiz not attempted")
+
+    return quiz_attempts

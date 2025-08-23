@@ -9,6 +9,7 @@ from schemas.request_schemas import InstructorCreate, InstructorUpdate
 from schemas.token_schemas import CurrentUser
 from auth.security import Hasher
 from core.sort import sort
+from core.paginate import paginate
 
 
 def check_instructor(id: int, db: Session, current_instructor: CurrentUser):
@@ -50,7 +51,7 @@ def filter_quiz_ids(id: int, db: Session, current_instructor: CurrentUser):
     return created_quiz_ids
 
 
-def list_instructors(db: Session, search: str, sort_by: str, order: str):
+def list_instructors(db: Session, search: str, sort_by: str, order: str, page_num: int, page_size: int):
     query = db.query(Instructor)
 
     if search:
@@ -64,7 +65,7 @@ def list_instructors(db: Session, search: str, sort_by: str, order: str):
     fields = ["id", "first_name", "last_name", "email", "qualification", "created_at"]
     sorted_instructors = sort(query=query, model=Instructor, model_fields=fields, sort_field=sort_by, order=order)
         
-    return sorted_instructors
+    return paginate(page_num, page_size, sorted_instructors)
     
 
 
@@ -115,7 +116,7 @@ def update_instructor(id: int, request: InstructorUpdate, db: Session, current_u
     return instructor
 
 
-def list_created_courses(id: int, db: Session, search: str, sort_by: str, order: str):
+def list_created_courses(id: int, db: Session, search: str, sort_by: str, order: str, page_num: int, page_size: int):
     instructor = db.query(Instructor).filter(Instructor.id == id).first()
     if not instructor:     
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No instructor with id: {id}")
@@ -130,10 +131,10 @@ def list_created_courses(id: int, db: Session, search: str, sort_by: str, order:
     fields = ["id", "name", "credits", "duration"]
     sorted_courses = sort(query=query, model=Course, model_fields=fields, sort_field=sort_by, order=order)
 
-    return sorted_courses
+    return paginate(page_num, page_size, sorted_courses)
 
 
-def list_created_quizzes(id: int, db: Session, current_instructor: CurrentUser, search: str, sort_by: str, order: str):
+def list_created_quizzes(id: int, db: Session, current_instructor: CurrentUser, search: str, sort_by: str, order: str, page_num: int, page_size: int):
     created_quiz_ids = filter_quiz_ids(id, db, current_instructor)
     query = db.query(Quiz).filter(Quiz.id.in_(created_quiz_ids))
 
@@ -142,32 +143,32 @@ def list_created_quizzes(id: int, db: Session, current_instructor: CurrentUser, 
             Quiz.title.ilike(f"%{search}%") 
         )
     fields = ["id", "title", "marks_per_ques", "total_marks"]
-    sorted_quizzes = sort(sort(query=query, model=Quiz, model_fields=fields, sort_field=sort_by, order=order))
+    sorted_quizzes = sort(query=query, model=Quiz, model_fields=fields, sort_field=sort_by, order=order)
     
-    return sorted_quizzes
+    return paginate(page_num, page_size, sorted_quizzes)
 
 
-def show_quiz_results(id: int, db: Session, current_instructor: CurrentUser):
+def show_quiz_results(id: int, db: Session, current_instructor: CurrentUser, page_num: int, page_size: int):
     created_quiz_ids = filter_quiz_ids(id, db, current_instructor)
 
-    quiz_results = db.query(QuizResult).filter(QuizResult.quiz_id.in_(created_quiz_ids)).all()
-    if not quiz_results:
+    query = db.query(QuizResult).filter(QuizResult.quiz_id.in_(created_quiz_ids)).all()
+    if not query.all():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No quizzes attempted")
 
-    return quiz_results
+    return paginate(page_num, page_size, query)
 
 
-def show_quiz_attempts(id: int, db: Session, current_instructor: CurrentUser):
-    created_quiz_ids = filter_quiz_ids(id, db, current_instructor)
+# def show_quiz_attempts(id: int, db: Session, current_instructor: CurrentUser):
+#     created_quiz_ids = filter_quiz_ids(id, db, current_instructor)
 
-    quiz_attempts = db.query(
-        QuizAttempt.student_id, 
-        QuizAttempt.quiz_id, 
-        QuizAttempt.question_id, 
-        QuizAttempt.answer, 
-        Question.correct_option_id
-        ).join(Question, Question.id == QuizAttempt.question_id).filter(QuizAttempt.quiz_id.in_(created_quiz_ids)).all()
-    if not quiz_attempts:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No quizzes attempted")
+#     quiz_attempts = db.query(
+#         QuizAttempt.student_id, 
+#         QuizAttempt.quiz_id, 
+#         QuizAttempt.question_id, 
+#         QuizAttempt.answer, 
+#         Question.correct_option_id
+#         ).join(Question, Question.id == QuizAttempt.question_id).filter(QuizAttempt.quiz_id.in_(created_quiz_ids)).all()
+#     if not quiz_attempts:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No quizzes attempted")
 
-    return quiz_attempts
+#     return quiz_attempts

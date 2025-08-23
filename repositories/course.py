@@ -7,6 +7,7 @@ from schemas.request_schemas import CourseCreate, CourseUpdate
 from schemas.token_schemas import CurrentUser
 from .instructor import check_instructor
 from core.sort import sort
+from core.paginate import paginate
 
 
 def check_instructor_course(c_id: int, db: Session, current_instructor: CurrentUser):
@@ -19,7 +20,7 @@ def check_instructor_course(c_id: int, db: Session, current_instructor: CurrentU
     return course
 
 
-def list_all_courses(db: Session, search: str, sort_by: str, order: str):
+def list_all_courses(db: Session, search: str, sort_by: str, order: str, page_num: int, page_size: int):
     query = db.query(Course)
     if search:
         query = query.filter(
@@ -27,9 +28,9 @@ def list_all_courses(db: Session, search: str, sort_by: str, order: str):
         )
 
     fields = ["id", "name", "credits", "duration"]
-    sorted_courses = sort(sort(query=query, model=Course, model_fields=fields, sort_field=sort_by, order=order))
+    sorted_courses = sort(query=query, model=Course, model_fields=fields, sort_field=sort_by, order=order)
 
-    return sorted_courses
+    return paginate(page_num, page_size, sorted_courses)
 
 
 def get_course(id: int, db: Session):

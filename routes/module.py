@@ -29,8 +29,8 @@ def update_module(id: int, request: ModuleUpdate, db: Session = Depends(get_db),
     return module.update_module(id, request, db, current_user)
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_module(id: int, request: ModuleCreate, db: Session = Depends(get_db), current_user: CurrentUser = Depends(require_instructor)):
-    return module.delete_module(id, request, db, current_user)
+def delete_module(id: int, db: Session = Depends(get_db), current_user: CurrentUser = Depends(require_instructor)):
+    return module.delete_module(id, db, current_user)
 
 
 @router.post("/{id}/uploadfile", status_code=status.HTTP_201_CREATED)

@@ -6,4 +6,4 @@ def sort(query, model, model_fields, sort_field, order):
             
         query = query.order_by(sort_column)
 
-    return query.all()
+    return query
