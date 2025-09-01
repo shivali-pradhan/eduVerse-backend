@@ -1,7 +1,6 @@
 from fastapi import APIRouter, status, Depends, Query
 from typing import List, Optional
 from sqlalchemy.orm import Session
-from fastapi_pagination import Page, paginate, Params
 
 from database import get_db
 from auth.dependencies import require_instructor, require_student

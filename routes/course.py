@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, status, Query
-from fastapi_pagination import Page, Params, paginate
 from sqlalchemy.orm import Session
 from typing import List, Optional
 

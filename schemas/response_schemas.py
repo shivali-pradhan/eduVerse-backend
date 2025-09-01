@@ -92,6 +92,8 @@ class ModuleResponse(ModuleBase):
     content_files: List[ContentFileResponse]
     quizzes: List[StudentQuizResponse]
 
+class Enrollment(MyBaseModel):
+    enrolled_at: datetime.datetime
 
 class CourseResponse(CourseBase):
     modules: List[ModuleBase] = []

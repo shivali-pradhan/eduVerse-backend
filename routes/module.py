@@ -1,7 +1,5 @@
 from fastapi import APIRouter, Depends, status, UploadFile, File, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
-import os
 from schemas.request_schemas import ModuleCreate, ModuleUpdate
 from schemas.response_schemas import ModuleBase, ModuleResponse
 from schemas.token_schemas import CurrentUser

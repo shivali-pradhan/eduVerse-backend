@@ -33,7 +33,7 @@ class Course(MyBaseModel):
     
     creator = relationship("Instructor", back_populates="courses")
     modules = relationship("Module", back_populates="parent_course", passive_deletes=True)
-    enrollments = relationship("Enrollment", back_populates="course")
+    enrollments = relationship("Enrollment", back_populates="course", passive_deletes=True)
     students_enrolled = relationship("Student", secondary="enrollments", back_populates="enrolled_in")
 
 

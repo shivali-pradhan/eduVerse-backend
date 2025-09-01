@@ -151,18 +151,18 @@ def show_quiz_scores(id: int, db: Session, current_student: CurrentUser, page_nu
     return paginate(page_num, page_size, query)
 
 
-def show_quiz_attempts(id: int, db: Session, current_student: CurrentUser):
-    student = check_student(id, db, current_student)
-    quiz_attempts = db.query(
-        QuizAttempt.quiz_id, 
-        QuizAttempt.question_id, 
-        QuizAttempt.answer,
-        Question.correct_option_id
-        ).join(Question, Question.id == QuizAttempt.question_id).filter(
-            QuizAttempt.student_id == student.id).all()
-    if not quiz_attempts:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No attempted quizzes")
+# def show_quiz_attempts(id: int, db: Session, current_student: CurrentUser):
+#     student = check_student(id, db, current_student)
+#     quiz_attempts = db.query(
+#         QuizAttempt.quiz_id, 
+#         QuizAttempt.question_id, 
+#         QuizAttempt.answer,
+#         Question.correct_option_id
+#         ).join(Question, Question.id == QuizAttempt.question_id).filter(
+#             QuizAttempt.student_id == student.id).all()
+#     if not quiz_attempts:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No attempted quizzes")
 
-    print(quiz_attempts)
-    return quiz_attempts
+#     print(quiz_attempts)
+#     return quiz_attempts
     

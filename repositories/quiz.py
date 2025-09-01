@@ -76,7 +76,7 @@ def add_question(id: int, request: QuestionCreate, db: Session, current_instruct
     db.flush()
     quiz.total_marks += quiz.marks_per_ques
 
-    options_list = []
+    option_ids = []
 
     for opt in request.options:
         new_option = Option(
@@ -85,13 +85,13 @@ def add_question(id: int, request: QuestionCreate, db: Session, current_instruct
         )
         db.add(new_option)
         db.flush()
-        options_list.append(opt)
+        option_ids.append(new_option.id)
 
     corr_opt_idx = request.correct_option_index
-    if corr_opt_idx <= 0 or corr_opt_idx > len(options_list):
+    if corr_opt_idx <= 0 or corr_opt_idx > len(option_ids):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid correct option index")
     
-    new_question.correct_option_id = corr_opt_idx
+    new_question.correct_option_id = option_ids[corr_opt_idx - 1]
 
     db.commit()
     db.refresh(new_question)
@@ -175,7 +175,7 @@ def attempt_quiz(quiz_id: int, request: QuizAttemptCreate, db: Session, current_
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid option")
         
         if question.correct_option_id == attempt.option_id:
-            score += 1
+            score += quiz.marks_per_ques
 
         new_quiz_attempt = QuizAttempt(
             student_id = current_student.id,
