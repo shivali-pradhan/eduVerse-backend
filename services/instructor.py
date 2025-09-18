@@ -70,8 +70,18 @@ def list_instructors(db: Session, search: str, sort_by: str, order: str, page_nu
 
 
 def register_instructor(request: InstructorCreate, db: Session):
-    hashed_password = Hasher.get_password_hash(request.password)
+
+    # check for duplicate username
+    user =  db.query(User).filter(User.username == request.username).first()
+    if user:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"Username already exists")
     
+    # check for duplicate email
+    student =  db.query(Instructor).filter(Instructor.email == request.email).first()
+    if student:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"Email already exists")
+    
+    hashed_password = Hasher.get_password_hash(request.password)
     new_user = User(
         username = request.username,
         password = hashed_password,

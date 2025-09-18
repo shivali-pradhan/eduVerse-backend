@@ -5,7 +5,7 @@ from typing import List, Optional
 from schemas.request_schemas import CourseCreate
 from schemas.response_schemas import CourseBase, InstructorCourseResponse, StudentCourseResponse
 from schemas.token_schemas import CurrentUser
-from repositories import course
+from services import course
 from auth.dependencies import get_current_user, require_instructor
 from database import get_db
 from schemas.custom_pagination import PaginatedResponse

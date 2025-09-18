@@ -39,8 +39,17 @@ def list_students(db: Session, search: str, sort_by: str, order: str, page_num: 
 
 def register_student(request: StudentCreate, db: Session):
     
-    hashed_password = Hasher.get_password_hash(request.password)
+    # check for duplicate username
+    user =  db.query(User).filter(User.username == request.username).first()
+    if user:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Username already exists")
     
+    # check for duplicate email
+    student =  db.query(Student).filter(Student.email == request.email).first()
+    if student:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Email already exists")
+    
+    hashed_password = Hasher.get_password_hash(request.password)
     new_user = User(
         username = request.username,
         password = hashed_password,
@@ -91,6 +100,7 @@ def list_enrolled_courses(id: int, db: Session, current_student: CurrentUser, se
     sorted_courses = sort(query=query, model=Course, model_fields=fields, sort_field=sort_by, order=order)
 
     return paginate(page_num, page_size, sorted_courses)
+
 
 def enroll_in_course(id: int, request: EnrollmentCreate, db: Session, current_student: CurrentUser):
     check_student(id, db, current_student)

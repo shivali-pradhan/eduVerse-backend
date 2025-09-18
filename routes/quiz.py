@@ -5,7 +5,7 @@ from typing import List
 from schemas.request_schemas import QuizCreate, QuestionCreate, QuizAttemptCreate, QuestionUpdate
 from schemas.response_schemas import QuizBase, InstructorQuestionResponse, StudentQuizAttemptResponse, InstructorQuizAttemptResponse
 from schemas.token_schemas import CurrentUser
-from repositories import quiz
+from services import quiz
 from auth.dependencies import require_instructor, require_student, get_current_user
 from database import get_db
 

@@ -8,7 +8,7 @@ from schemas.request_schemas import InstructorCreate, InstructorUpdate
 from schemas.response_schemas import InstructorBase, InstructorResponse, InstructorCourseResponse, InstructorQuizResponse, InstructorQuizScoreResponse, InstructorQuizAttemptResponse
 from schemas.token_schemas import CurrentUser
 from schemas.custom_pagination import PaginatedResponse
-from repositories import instructor
+from services import instructor
 from fastapi import Query
 
 router = APIRouter(

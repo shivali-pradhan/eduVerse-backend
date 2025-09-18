@@ -8,7 +8,7 @@ from schemas.request_schemas import StudentCreate, EnrollmentCreate, StudentUpda
 from schemas.response_schemas import StudentBase, StudentResponse, StudentCourseResponse, StudentQuizResponse, StudentQuizScoreResponse, StudentQuizAttemptResponse
 from schemas.token_schemas import CurrentUser
 from schemas.custom_pagination import PaginatedResponse
-from repositories import student
+from services import student
 
 router = APIRouter(
     prefix = "/students", 

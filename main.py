@@ -1,7 +1,5 @@
 from fastapi import FastAPI
-from fastapi_pagination import add_pagination, set_params
-
-from schemas.custom_pagination import CustomParams
+from fastapi.middleware.cors import CORSMiddleware
 import database
 from routes import student, instructor, course, module, quiz
 from auth import routes as auth_route
@@ -10,8 +8,14 @@ from models import *
 
 app = FastAPI()
 
-set_params(CustomParams)
-add_pagination(app)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,  # Allow cookies and authorization headers
+    allow_methods=["*"],     # Allow all HTTP methods (GET, POST, PUT, DELETE, etc.)
+    allow_headers=["*"],     # Allow all headers in cross-origin requests
+)
+
 database.create_db_tables()
 
 app.include_router(auth_route.router)

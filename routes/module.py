@@ -4,7 +4,7 @@ from schemas.request_schemas import ModuleCreate, ModuleUpdate
 from schemas.response_schemas import ModuleBase, ModuleResponse
 from schemas.token_schemas import CurrentUser
 from auth.dependencies import require_instructor, get_current_user
-from repositories import module
+from services import module
 
 from database import get_db
 
