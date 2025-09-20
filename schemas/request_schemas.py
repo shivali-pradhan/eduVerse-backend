@@ -8,7 +8,7 @@ class UserCreate(BaseModel):
     email: EmailStr
     username: str = Field(..., min_length=3, max_length=30)
     password: str
-    confirm_password: str
+    # confirm_password: str
 
     @field_validator("password")
     def validate_password_strength(cls, value: str) -> str:
@@ -24,11 +24,11 @@ class UserCreate(BaseModel):
             raise ValueError("Password must contain at least one special character")
         return value
     
-    @model_validator(mode="after")
-    def match_passwords(self) -> str:
-        if self.password != self.confirm_password:
-            raise ValueError("Passwords do not match")
-        return self
+    # @model_validator(mode="after")
+    # def match_passwords(self) -> str:
+    #     if self.password != self.confirm_password:
+    #         raise ValueError("Passwords do not match")
+    #     return self
   
 
 class StudentCreate(UserCreate):
