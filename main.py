@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import database
-from routes import student, instructor, course, module, quiz
+from routes import student, instructor, course, module, quiz, current_user
 from auth import routes as auth_route
 
 from models import *    
@@ -24,6 +24,8 @@ app.include_router(instructor.router)
 app.include_router(course.router)
 app.include_router(module.router)
 app.include_router(quiz.router)
+app.include_router(current_user.router)
+
 
 
 @app.get("/")

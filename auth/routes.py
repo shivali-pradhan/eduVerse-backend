@@ -26,25 +26,26 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)  
     access_token = create_access_token(data={"sub": user.username, "role": user.role, "exp": access_token_expires})
     
-    if user.role == "INSTRUCTOR":
-        instructor = db.query(Instructor).filter(Instructor.id == user.id).first()
-        current_user = {
-            "first_name": instructor.first_name,
-            "last_name": instructor.last_name,
-            "email": instructor.email,
-        }
-    elif user.role == "STUDENT":
-        student = db.query(Student).filter(Student.id == user.id).first()
-        current_user = {
-            "first_name": student.first_name,
-            "last_name": student.last_name,
-            "email": student.email,
-        }
+    # if user.role == "INSTRUCTOR":
+    #     instructor = db.query(Instructor).filter(Instructor.id == user.id).first()
+    #     current_user = {
+    #         "first_name": instructor.first_name,
+    #         "last_name": instructor.last_name,
+    #         "email": instructor.email,
+    #     }
+    # elif user.role == "STUDENT":
+    #     student = db.query(Student).filter(Student.id == user.id).first()
+    #     current_user = {
+    #         "first_name": student.first_name,
+    #         "last_name": student.last_name,
+    #         "email": student.email,
+    #     }
 
-    logged_in_user = {
-        "user": { **current_user,
-            "role": user.role
-        },
-        "token": Token(access_token=access_token)
-    }
-    return logged_in_user
+    # logged_in_user = {
+    #     "user": { **current_user,
+    #         "role": user.role
+    #     },
+    #     "token": Token(access_token=access_token)
+    # }
+    return Token(access_token=access_token)
+
