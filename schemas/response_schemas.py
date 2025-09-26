@@ -107,7 +107,6 @@ class InstructorCourseResponse(CourseBase):
 
 
 class StudentCourseResponse(CourseBase):
-    modules: List[ModuleBase] = []
     creator: InstructorBase
 
 
