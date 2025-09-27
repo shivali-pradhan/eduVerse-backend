@@ -4,9 +4,9 @@ import string
 
 class UserCreate(BaseModel):
     first_name: str = Field(..., min_length=3, max_length=50)
-    last_name: str = Field(min_length=0, max_length=50)
+    last_name: str = Field(min_length=3, max_length=50)
     email: EmailStr
-    username: str = Field(..., min_length=3, max_length=30)
+    username: str = Field(..., min_length=3, max_length=20)
     password: str
     # confirm_password: str
 

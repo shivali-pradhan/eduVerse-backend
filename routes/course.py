@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 
 from schemas.request_schemas import CourseCreate
-from schemas.response_schemas import CourseBase, InstructorCourseResponse, StudentCourseResponse
+from schemas.response_schemas import CourseBase, InstructorCourseResponse, StudentCourseResponse, StudentCourseDetailResponse
 from schemas.token_schemas import CurrentUser
 from services import course
 from auth.dependencies import get_current_user, require_instructor
@@ -27,7 +27,7 @@ def list_all_courses(
     ):
     return course.list_all_courses(db, search, sort_by, order, page_num, page_size)
 
-@router.get("/{id}", response_model=StudentCourseResponse)
+@router.get("/{id}", response_model=StudentCourseDetailResponse)
 def get_course(id: int, db: Session = Depends(get_db), current_user: CurrentUser = Depends(get_current_user)):
     return course.get_course(id, db)
 
